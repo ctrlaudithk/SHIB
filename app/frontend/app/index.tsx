@@ -1,16 +1,29 @@
-import { Text, View, StyleSheet, Image } from "react-native";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 
-const EXPO_PUBLIC_BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+import { getUsername } from "@/src/lib/db";
+import { colors } from "@/src/lib/theme";
 
 export default function Index() {
-  console.log(EXPO_PUBLIC_BACKEND_URL, "EXPO_PUBLIC_BACKEND_URL");
+  const router = useRouter();
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const name = await getUsername();
+      setReady(true);
+      if (name && name.trim().length > 0) {
+        router.replace("/scan");
+      } else {
+        router.replace("/onboarding");
+      }
+    })();
+  }, [router]);
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={require("../assets/images/app-image.png")}
-        style={styles.image}
-      />
+    <View style={styles.container} testID="boot-screen">
+      {!ready ? <ActivityIndicator color={colors.onSurface} /> : null}
     </View>
   );
 }
@@ -18,15 +31,8 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0c0c0c",
+    backgroundColor: colors.surface,
     alignItems: "center",
     justifyContent: "center",
   },
-  image: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "contain",
-  },
 });
-
-
